@@ -1,0 +1,27 @@
+{
+  "name": "ts-binary-types-worker-demo",
+  "version": "0.0.1",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "build": "rollup -c && cp index.html dist",
+    "serve": "http-server -c0 dist"
+  },
+  "keywords": [],
+  "author": "Simon Korzunov",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "comlink": "^4.0.1",
+    "lit-html": "^1.1.2",
+    "rollup": "^1.21.4",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-off-main-thread": "^1.1.0",
+    "rollup-plugin-typescript": "^1.0.1",
+    "ts-binary-types": "0.2.0"
+  },
+  "devDependencies": {
+    "http-server": "^0.11.1",
+    "typescript": "^3.6.3",
+    "tslib": "^1.10.0"
+  }
+}
