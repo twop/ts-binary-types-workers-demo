@@ -25,7 +25,7 @@ type NestedPayload = Static<typeof NestedPayload>;
 
 const genNestedPayload = (): NestedPayload => ({
   bool: genBool(),
-  i32vec: genVec(100, genI32)
+  i32vec: genVec(5, genI32)
 });
 
 const VariantPayload = Union({
@@ -78,7 +78,7 @@ export type GenMsgOptions = {
   struct?: boolean;
 };
 
-const genPayload = ({
+export const genPayload = ({
   str,
   f64,
   tuple,

@@ -17,7 +17,8 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-off-main-thread": "^1.1.0",
     "rollup-plugin-typescript": "^1.0.1",
-    "ts-binary-types": "0.2.0"
+    "ts-binary-types": "0.2.0",
+    "ts-union": "^2.1.1"
   },
   "devDependencies": {
     "http-server": "^0.11.1",

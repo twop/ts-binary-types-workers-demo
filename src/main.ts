@@ -5,10 +5,14 @@ import {
   readMessage,
   WorkerMsg,
   printExecTime,
-  GenMsgOptions
+  GenMsgOptions,
+  genPayload
 } from "./messages";
 
+import { Union, of } from "ts-union";
+
 import { html, render } from "lit-html";
+import { guard } from "lit-html/directives/guard";
 
 const worker = new Worker("./worker.js");
 
@@ -84,24 +88,47 @@ const measureBinary = (messages: Msg[]) => {
 
 type AppState = {
   options: GenMsgOptions;
+  msgCount: number;
 };
 
+const Action = Union({
+  ChangeOptions: of<GenMsgOptions>(),
+  ChangeMsgCount: of<number>()
+});
+
+const { ChangeOptions, ChangeMsgCount } = Action;
+
+type Action = typeof Action.T;
+
+const reducer = (state: AppState, action: Action) =>
+  Action.match<AppState>(action, {
+    ChangeOptions: options => ({ ...state, options }),
+    ChangeMsgCount: msgCount => ({ ...state, msgCount })
+  });
+
 function renderLoop(state: AppState) {
-  const COUNT = 100;
-
-  const messages = Array.from({ length: COUNT }, () =>
-    genMessage(400, state.options)
+  render(
+    app(state, action => renderLoop(reducer(state, action))),
+    document.body
   );
-
-  render(app(state, newState => renderLoop(newState), messages), document.body);
 }
 
 // Define a template
 const app = (
-  { options }: AppState,
-  setState: (newState: AppState) => void,
-  messages: Msg[]
+  { options, msgCount }: AppState,
+  dispatch: (action: Action) => void
 ) => {
+  const lazyMessages = (() => {
+    let msgs: Msg[] | undefined = undefined;
+
+    return () => {
+      if (msgs) return msgs;
+
+      msgs = generateMessages(msgCount, options);
+      return msgs;
+    };
+  })();
+
   return html`
     <p>binary types demo</p>
     ${([
@@ -111,13 +138,21 @@ const app = (
       "struct",
       "union"
     ] as (keyof GenMsgOptions)[]).map(opt =>
-      generationOption(options, opt, setState)
+      generationOption(options, opt, dispatch)
     )}
 
     <p>
+      <div class="">
+        <p>message count = ${msgCount}</p>
+        <input type="range" min="10" max="1000" value=${msgCount} step="1" @change=${(ev: {
+    target: { valueAsNumber: number };
+  }) => dispatch(ChangeMsgCount(ev.target.valueAsNumber))}/>
+      </div>
+    </p>
+    <p>
       <button
         @click=${() =>
-          measureJson(messages).then(delta =>
+          measureJson(lazyMessages()).then(delta =>
             printExecTime("structured cloning", delta)
           )}
       >
@@ -127,29 +162,46 @@ const app = (
     <p>
       <button
         @click=${() =>
-          measureBinary(messages).then(delta =>
+          measureBinary(lazyMessages()).then(delta =>
             printExecTime("binary cloning", delta)
           )}
       >
         measure binary
       </button>
     </p>
+    <p>
+    <p>Payload example:</p>
+      ${guard(
+        [options],
+        () =>
+          html`
+            <pre>${JSON.stringify(genPayload(options), null, 2)}</pre>
+          `
+      )}
+    </p>
   `;
 };
+
+function generateMessages(count: number, options: GenMsgOptions) {
+  return Array.from({ length: count }, () => genMessage(400, options));
+}
 
 function generationOption<K extends keyof GenMsgOptions>(
   options: GenMsgOptions,
   name: K,
-  setState: (newState: AppState) => void
+  dispatch: (action: Action) => void
 ) {
   const opt = options[name] || false;
   return html`
   <p>
     <input type="checkbox" ?checked=${opt} @click=${() =>
-    setState({ options: { ...options, [name]: !opt } })}>
+    dispatch(ChangeOptions({ ...options, [name]: !opt }))}>
       ${name}
     </input>
   </p>`;
 }
 
-renderLoop({ options: { f64: true } });
+renderLoop({
+  msgCount: 100,
+  options: { f64: true }
+});
