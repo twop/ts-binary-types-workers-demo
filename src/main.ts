@@ -16,7 +16,7 @@ import { guard } from "lit-html/directives/guard";
 
 const worker = new Worker("./worker.js");
 
-const measureJson = (messages: Msg[]) => {
+const measureJson = (messages: Msg[]): Promise<number> => {
   const stopGC: any[] = [];
 
   const sendMsgObj = (msg: Msg) =>
@@ -43,7 +43,7 @@ const measureJson = (messages: Msg[]) => {
   });
 };
 
-const measureBinary = (messages: Msg[]) => {
+const measureBinary = (messages: Msg[]): Promise<number> => {
   const stopGC: any[] = [];
 
   const sendMsgBin = (msg: Msg, arr: Uint8Array) => {
@@ -86,59 +86,82 @@ const measureBinary = (messages: Msg[]) => {
   });
 };
 
-type AppState = {
+const BenchmarkResult = Union({
+  NotStarted: of(null),
+  InProgress: of(null),
+  Finished: of<BenchType, number>()
+});
+
+const { InProgress, NotStarted, Finished } = BenchmarkResult;
+type BenchmarkResult = typeof BenchmarkResult.T;
+
+type State = {
   options: GenMsgOptions;
   msgCount: number;
+  result: BenchmarkResult;
+  messages?: Msg[];
 };
+
+const enum BenchType {
+  Binary = "Binary",
+  StructuralCloning = "StructuralCloning"
+}
+
+const Effect = Union({
+  RunBenchmark: of<Msg[], BenchType>(),
+  GenerateMessages: of<BenchType, GenMsgOptions, number>()
+});
+
+type Effect = typeof Effect.T;
 
 const Action = Union({
   ChangeOptions: of<GenMsgOptions>(),
-  ChangeMsgCount: of<number>()
+  ChangeMsgCount: of<number>(),
+  Start: of<BenchType>(),
+  SetMessages: of<BenchType, Msg[]>(),
+  Finish: of<BenchType, number>()
 });
 
-const { ChangeOptions, ChangeMsgCount } = Action;
+const { ChangeOptions, ChangeMsgCount, Start, SetMessages, Finish } = Action;
 
 type Action = typeof Action.T;
 
-const reducer = (state: AppState, action: Action) =>
-  Action.match<AppState>(action, {
-    ChangeOptions: options => ({ ...state, options }),
-    ChangeMsgCount: msgCount => ({ ...state, msgCount })
+const update = (state: State, action: Action) =>
+  Action.match<[State, Effect?]>(action, {
+    ChangeOptions: options => [{ ...state, options, messages: undefined }],
+    ChangeMsgCount: msgCount => [{ ...state, msgCount, messages: undefined }],
+    Start: type => {
+      const { messages, options, msgCount } = state;
+      return [
+        { ...state, result: InProgress },
+        messages
+          ? Effect.RunBenchmark(messages, type)
+          : Effect.GenerateMessages(type, options, msgCount)
+      ];
+    },
+    SetMessages: (typeToRun, messages) => [
+      { ...state, messages },
+      Effect.RunBenchmark(messages, typeToRun)
+    ],
+    Finish: (type, duration) => [{ ...state, result: Finished(type, duration) }]
   });
 
-function renderLoop(state: AppState) {
-  render(
-    app(state, action => renderLoop(reducer(state, action))),
-    document.body
-  );
-}
+const allOptionsKeys: (keyof GenMsgOptions)[] = [
+  "f64",
+  "str",
+  "tuple",
+  "struct",
+  "union"
+];
 
-// Define a template
 const app = (
-  { options, msgCount }: AppState,
+  { options, msgCount, result }: State,
   dispatch: (action: Action) => void
 ) => {
-  const lazyMessages = (() => {
-    let msgs: Msg[] | undefined = undefined;
-
-    return () => {
-      if (msgs) return msgs;
-
-      msgs = generateMessages(msgCount, options);
-      return msgs;
-    };
-  })();
-
   return html`
     <p>binary types demo</p>
-    ${([
-      "f64",
-      "str",
-      "tuple",
-      "struct",
-      "union"
-    ] as (keyof GenMsgOptions)[]).map(opt =>
-      generationOption(options, opt, dispatch)
+    ${guard([options], () =>
+      allOptionsKeys.map(opt => generationOption(options, opt, dispatch))
     )}
 
     <p>
@@ -151,25 +174,40 @@ const app = (
     </p>
     <p>
       <button
-        @click=${() =>
-          measureJson(lazyMessages()).then(delta =>
-            printExecTime("structured cloning", delta)
-          )}
+        @click=${() => dispatch(Start(BenchType.StructuralCloning))}
       >
         measure json
       </button>
     </p>
     <p>
       <button
-        @click=${() =>
-          measureBinary(lazyMessages()).then(delta =>
-            printExecTime("binary cloning", delta)
-          )}
+        @click=${() => dispatch(Start(BenchType.Binary))}
       >
         measure binary
       </button>
     </p>
     <p>
+    <p style="margin-left: 10px">
+      Result:
+      <p>
+        ${guard([result], () =>
+          BenchmarkResult.match(result, {
+            InProgress: () =>
+              html`
+                <div>Running...</div>
+              `,
+            NotStarted: () =>
+              html`
+                <div>Press a button to start</div>
+              `,
+            Finished: (type, duration) =>
+              html`
+                <div>${type} took: ${duration}ms</div>
+              `
+          })
+        )}
+      </p>
+    </p>
     <p>Payload example:</p>
       ${guard(
         [options],
@@ -181,10 +219,6 @@ const app = (
     </p>
   `;
 };
-
-function generateMessages(count: number, options: GenMsgOptions) {
-  return Array.from({ length: count }, () => genMessage(400, options));
-}
 
 function generationOption<K extends keyof GenMsgOptions>(
   options: GenMsgOptions,
@@ -201,7 +235,46 @@ function generationOption<K extends keyof GenMsgOptions>(
   </p>`;
 }
 
-renderLoop({
+const runEffect = (effect: Effect, dispatch: (action: Action) => void) => {
+  Effect.match(effect, {
+    RunBenchmark: (messages, type) => {
+      if (messages)
+        (type === BenchType.Binary
+          ? measureBinary(messages)
+          : measureJson(messages)
+        ).then(duration => {
+          printExecTime(type, duration);
+          return dispatch(Finish(type, duration));
+        });
+    },
+    GenerateMessages: (typeToRunNext, options, msgCount) =>
+      dispatch(
+        SetMessages(
+          typeToRunNext,
+          Array.from({ length: msgCount }, () => genMessage(400, options))
+        )
+      )
+  });
+};
+
+const renderApp = (state: State, dispatch: (action: Action) => void) =>
+  render(app(state, dispatch), document.body);
+
+const startApp = (initial: State) => {
+  let state = initial;
+
+  function dispatch(action: Action) {
+    const [newState, effect] = update(state, action);
+    state = newState;
+    if (effect) runEffect(effect, dispatch);
+    renderApp(newState, dispatch);
+  }
+
+  renderApp(state, dispatch);
+};
+
+startApp({
   msgCount: 100,
-  options: { f64: true }
+  options: { f64: true },
+  result: NotStarted
 });
