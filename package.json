@@ -12,6 +12,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "comlink": "^4.0.1",
+    "dequal": "^1.0.0",
     "lit-html": "^1.1.2",
     "rollup": "^1.21.4",
     "rollup-plugin-node-resolve": "^5.2.0",

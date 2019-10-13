@@ -14,7 +14,6 @@ import {
 } from "ts-binary-types";
 
 const BoolI32 = Tuple(Bool, I32);
-// const BoolStr = Tuple(Bool, Str);
 
 const NestedPayload = Struct({
   bool: Bool,
@@ -41,7 +40,7 @@ const genVariantPayload = (): VariantPayload => {
     : VariantPayload.val(genNestedPayload());
 };
 
-const Payload = Struct({
+export const Payload = Struct({
   str: Optional(Str),
   f64: Optional(F64),
   tuple: Optional(BoolI32),
@@ -49,10 +48,12 @@ const Payload = Struct({
   struct: Optional(NestedPayload)
 });
 
-type Payload = Static<typeof Payload>;
+export type Payload = Static<typeof Payload>;
 
-export const Msg = Vec(Payload);
-export type Msg = Static<typeof Msg>;
+// export const Msg = Vec(Payload);
+// export type Msg = Static<typeof Msg>;
+export const Packet = Vec(Payload);
+export type Packet = Static<typeof Packet>;
 
 const genF64 = () => Math.random() * 1000000;
 const genI32 = () =>
@@ -60,17 +61,23 @@ const genI32 = () =>
 
 const genVec = <T>(length: number, f: () => T) => Array.from({ length }, f);
 
-function randomStr(length: number): string {
-  var text = "";
-  var possible = "авыджалдллтЛОЫФДЛВдфульсвдыолдо";
+const possibleLetters =
+  "выфвпｪｺｻｪ ｷｼｪｩｪ ｺｪｹ ｻｼ ｴｮｨｱаывпцукжд比诶艾娜诶艾伊吾艾比诶艾娜诶艾伊吾asdsasadfasdfdsfsdafлчмДЛОДЛТДЛОЖЖЩШЛДЙТЦУЗЧЖСДЛ12389050-5435";
 
-  for (var i = 0; i < length; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+// const possibleLetters=  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+function randomStr(length: number): string {
+  let text = "";
+
+  for (let i = 0; i < length; i++)
+    text += possibleLetters.charAt(
+      Math.floor(Math.random() * possibleLetters.length)
+    );
 
   return text;
 }
 
-export type GenMsgOptions = {
+export type GenPayloadOptions = {
   str?: boolean;
   f64?: boolean;
   tuple?: boolean;
@@ -84,25 +91,29 @@ export const genPayload = ({
   tuple,
   union,
   struct
-}: GenMsgOptions): Payload => ({
+}: GenPayloadOptions): Payload => ({
   str: str ? randomStr(100) : undefined,
   f64: f64 ? genF64() : undefined,
   tuple: tuple ? BoolI32(genBool(), genI32()) : undefined,
   struct: struct ? genNestedPayload() : undefined,
   union: union ? genVariantPayload() : undefined
 });
-export const genMessage = (vecSize: number, options: GenMsgOptions): Msg =>
-  genVec(vecSize, () => genPayload(options));
+export const genPacket = (
+  vecSize: number,
+  options: GenPayloadOptions
+): Packet => genVec(vecSize, () => genPayload(options));
 
-export const writeMessage = (msg: Msg, arr: Uint8Array): Uint8Array => {
-  const { arr: res } = Msg[bindesc].write({ arr, pos: 0 }, msg);
+const write = Packet[bindesc].write;
+export const writePacket = (msg: Packet, arr: Uint8Array): Uint8Array => {
+  const { arr: res } = write({ arr, pos: 0 }, msg);
   //   console.log("$$", pos);
   return res;
 };
 
-export const readMessage = (arr: Uint8Array): Msg => {
+const read = Packet[bindesc].read;
+export const readPacket = (arr: Uint8Array): Packet => {
   const sink: Sink = { arr, pos: 0 };
-  const res = Msg[bindesc].read(sink);
+  const res = read(sink);
   // console.log(`read ${sink.pos} bytes`);
   return res;
 };
@@ -111,10 +122,12 @@ function genBool(): boolean {
   return Math.random() > 0.5;
 }
 
+export type WorkerStructuralMsg = { tag: "structural"; val: Packet };
+export type WorkerJsonMsg = { tag: "json"; val: string };
 export type WorkerMsg =
-  | { tag: "json"; val: Msg }
-  | { tag: "msg_arr"; val: ArrayBuffer }
-  | { tag: "shared_arr"; val: SharedArrayBuffer };
+  | WorkerStructuralMsg
+  | WorkerJsonMsg
+  | { tag: "binary"; val: ArrayBuffer };
 
 export const printExecTime = (name: string, delta: number) =>
   console.info(name + " took: %dms", delta);
