@@ -158,7 +158,7 @@ const app = (
   dispatch: (action: Action) => void
 ) => {
   return html`
-    <p>binary types demo</p>
+    <h3>Binary encoding demo (<a href=" https://github.com/twop/ts-binary-types-workers-demo">repo</a>)</h3>
     ${guard([options], () =>
       allOptionsKeys.map(opt => generationOption(options, opt, dispatch))
     )}
