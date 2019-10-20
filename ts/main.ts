@@ -14,13 +14,16 @@ import {
 import dequal from "dequal";
 dequal;
 
+// import module from "../crate/Cargo.toml";
+// module.run();
+
 import { Union, of } from "ts-union";
 
 import { html, render } from "lit-html";
 import { guard } from "lit-html/directives/guard";
 import { bindesc } from "ts-binary-types";
 
-const worker = new Worker("./worker.js");
+const worker = new Worker("./worker.ts", { type: "module" });
 
 const measureWith = <T>(
   read: (d: T) => Packet,
@@ -32,10 +35,10 @@ const measureWith = <T>(
     const start = performance.now();
 
     worker.onmessage = function msgListener({ data }) {
-      const msg = read(data);
-      received[i] = msg;
-      // if (!dequal(msg, messages[i])) {
-      //   console.log("not equal", msg, messages[i]);
+      const packet = read(data);
+      received[i] = packet;
+      // if (!dequal(packet, packets[i])) {
+      //   console.log("not equal", packet, packets[i]);
       // }
 
       i++;
@@ -50,14 +53,17 @@ const measureWith = <T>(
   });
 };
 
-const measureBinary = measureWith<ArrayBuffer>(
-  buffer => readPacket(new Uint8Array(buffer)),
-  (msg, receivedData = new ArrayBuffer(2024)) => {
-    const toSend = writePacket(msg, new Uint8Array(receivedData)).buffer;
-    const workerMsg: WorkerMsg = { tag: "binary", val: toSend };
-    worker.postMessage(workerMsg, [toSend]);
-  }
-);
+const PACKET_LENGTH = 1000;
+
+const measureBinary = (tag: "binary" | "binary_for_wasm") =>
+  measureWith<ArrayBuffer>(
+    buffer => readPacket(new Uint8Array(buffer)),
+    (msg, receivedData = new ArrayBuffer(PACKET_LENGTH * 200)) => {
+      const toSend = writePacket(msg, new Uint8Array(receivedData)).buffer;
+      const workerMsg: WorkerMsg = { tag, val: toSend };
+      worker.postMessage(workerMsg, [toSend]);
+    }
+  );
 
 const measureStructuralCloning = measureWith<WorkerStructuralMsg>(
   m => m.val,
@@ -93,6 +99,7 @@ type State = {
 
 const enum BenchType {
   Binary = "Binary",
+  WASM = "WASM",
   StructuralCloning = "StructuralCloning",
   JSON = "JSON"
 }
@@ -146,8 +153,6 @@ const allOptionsKeys: (keyof GenPayloadOptions)[] = [
   "union"
 ];
 
-const PACKET_LENGTH = 400;
-
 const app = (
   { options, packetCount: msgCount, result }: State,
   dispatch: (action: Action) => void
@@ -177,6 +182,13 @@ const app = (
         @click=${() => dispatch(Start(BenchType.Binary))}
       >
         binary
+      </button>
+    </p>
+    <p>
+      <button
+        @click=${() => dispatch(Start(BenchType.WASM))}
+      >
+        WASM
       </button>
     </p>
     <p>
@@ -211,22 +223,22 @@ const app = (
     <p>Payload example (there are ${PACKET_LENGTH} in a packet ):</p>
       ${guard([options], () => {
         const testPayload = genPayload(options);
-        const { pos } = Payload[bindesc].write(
-          { arr: new Uint8Array(1), pos: 0 },
-          testPayload
-        );
+        const binSize = estimateBinarySize(testPayload);
 
         const jsonSize = new TextEncoder().encode(JSON.stringify(testPayload))
           .length;
 
         return html`
           <pre>${JSON.stringify(testPayload, null, 2)}</pre>
-          <p>payload size in: binary=${pos}, utf8 JSON=${jsonSize}</p>
+          <p>payload size in: binary=${binSize}, utf8 JSON=${jsonSize}</p>
         `;
       })}
     </p>
   `;
 };
+
+const estimateBinarySize = (testPayload: Payload): number =>
+  Payload[bindesc].write({ arr: new Uint8Array(1), pos: 0 }, testPayload).pos;
 
 function generationOption<K extends keyof GenPayloadOptions>(
   options: GenPayloadOptions,
@@ -249,7 +261,9 @@ const runEffect = (effect: Effect, dispatch: (action: Action) => void) => {
       const benchmarkPromise = (() => {
         switch (type) {
           case BenchType.Binary:
-            return measureBinary(messages);
+            return measureBinary("binary")(messages);
+          case BenchType.WASM:
+            return measureBinary("binary_for_wasm")(messages);
           case BenchType.JSON:
             return measureJson(messages);
           case BenchType.StructuralCloning:
@@ -290,8 +304,16 @@ const startApp = (initial: State) => {
   renderApp(state, dispatch);
 };
 
-startApp({
-  packetCount: 100,
-  options: { f64: true },
-  result: NotStarted
-});
+worker.onmessage = function onWorkerReady({ data }) {
+  if (data !== "ready") {
+    return;
+  }
+
+  worker.removeEventListener("message", onWorkerReady);
+
+  startApp({
+    packetCount: 100,
+    options: { f64: true },
+    result: NotStarted
+  });
+};

@@ -33,13 +33,6 @@ const VariantPayload = Union({
 });
 type VariantPayload = Static<typeof VariantPayload>;
 
-const genVariantPayload = (): VariantPayload => {
-  const seed = Math.random();
-  return seed < 0.5
-    ? VariantPayload.unit
-    : VariantPayload.val(genNestedPayload());
-};
-
 export const Payload = Struct({
   str: Optional(Str),
   f64: Optional(F64),
@@ -50,21 +43,26 @@ export const Payload = Struct({
 
 export type Payload = Static<typeof Payload>;
 
-// export const Msg = Vec(Payload);
-// export type Msg = Static<typeof Msg>;
 export const Packet = Vec(Payload);
 export type Packet = Static<typeof Packet>;
 
+const genVariantPayload = (): VariantPayload => {
+  const seed = Math.random();
+  return seed < 0.5
+    ? VariantPayload.unit
+    : VariantPayload.val(genNestedPayload());
+};
 const genF64 = () => Math.random() * 1000000;
 const genI32 = () =>
   Math.floor(Math.random() * 1000000 * (Math.random() > 0.5 ? 1 : -1));
 
 const genVec = <T>(length: number, f: () => T) => Array.from({ length }, f);
 
-const possibleLetters =
-  "выфвпｪｺｻｪ ｷｼｪｩｪ ｺｪｹ ｻｼ ｴｮｨｱаывпцукжд比诶艾娜诶艾伊吾艾比诶艾娜诶艾伊吾asdsasadfasdfdsfsdafлчмДЛОДЛТДЛОЖЖЩШЛДЙТЦУЗЧЖСДЛ12389050-5435";
+// const possibleLetters =
+//   "выфвпｪｺｻｪ ｷｼｪｩｪ ｺｪｹ ｻｼ ｴｮｨｱаывпцукжд比诶艾娜诶艾伊吾艾比诶艾娜诶艾伊吾asdsasadfasdfdsfsdafлчмДЛОДЛТДЛОЖЖЩШЛДЙТЦУЗЧЖСДЛ12389050-5435";
 
-// const possibleLetters=  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const possibleLetters =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 function randomStr(length: number): string {
   let text = "";
@@ -127,7 +125,7 @@ export type WorkerJsonMsg = { tag: "json"; val: string };
 export type WorkerMsg =
   | WorkerStructuralMsg
   | WorkerJsonMsg
-  | { tag: "binary"; val: ArrayBuffer };
+  | { tag: "binary" | "binary_for_wasm"; val: ArrayBuffer };
 
 export const printExecTime = (name: string, delta: number) =>
   console.info(name + " took: %dms", delta);

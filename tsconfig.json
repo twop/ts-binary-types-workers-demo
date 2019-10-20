@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
+    "outDir": "./dist/",
     "removeComments": false,
     "sourceMap": true,
     "lib": ["webworker", "dom"],
@@ -11,7 +12,8 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": "./"
   },
   "exclude": ["node_modules", "__tests__", "**/__tests__", "src/__tests__"]
 }
