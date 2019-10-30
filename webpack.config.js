@@ -30,9 +30,9 @@ module.exports = {
   devServer: {
     contentBase: dist
   },
-  // optimization: {
-  //   minimize: false
-  // },
+  optimization: {
+    minimize: false
+  },
   plugins: [
     new CopyPlugin([path.resolve(__dirname, "static")]),
 

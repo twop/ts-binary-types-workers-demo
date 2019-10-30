@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 use web_sys::console;
-mod messages;
+mod messages_gen;
 use bincode;
 
 use js_sys::Uint8Array;
@@ -31,7 +31,7 @@ pub fn main_js() -> Result<(), JsValue> {
 #[wasm_bindgen]
 pub struct Echo {
     msg_data: Vec<u8>,
-    data_size: u32,
+    data_size: usize,
 }
 
 #[wasm_bindgen]
@@ -43,7 +43,6 @@ impl Echo {
         }
     }
     pub fn allocate_space(&mut self, size: u32) -> Uint8Array {
-        self.data_size = size;
         let casted_size: usize = size as usize;
         if self.msg_data.len() < casted_size {
             // console::log_2(
@@ -52,11 +51,12 @@ impl Echo {
             // );
             self.msg_data.resize(casted_size, 0);
         }
+        self.data_size = casted_size;
         self.view_memory()
     }
 
-    pub fn handle_message(&mut self) -> u32 {
-        let decoded: messages::Packet = bincode::deserialize(&self.msg_data[..]).unwrap();
+    pub fn handle_message(&mut self) -> Uint8Array {
+        let decoded: messages_gen::Packet = bincode::deserialize(&self.msg_data[..]).unwrap();
         let encoded: Vec<u8> = bincode::serialize(&decoded).unwrap();
 
         // console::log_2(
@@ -65,17 +65,18 @@ impl Echo {
         // );
 
         let enc_len: usize = encoded.len();
+        self.data_size = enc_len;
+
         if self.msg_data.len() <= enc_len {
             self.msg_data = encoded;
-            return enc_len as u32;
+        } else {
+            self.msg_data[..enc_len].copy_from_slice(&encoded[..]);
         }
 
-        self.msg_data[..enc_len].copy_from_slice(&encoded[..]);
-
-        enc_len as u32
+        self.view_memory()
     }
 
-    pub fn view_memory(&self) -> Uint8Array {
-        unsafe { Uint8Array::view(&self.msg_data[..]) }
+    fn view_memory(&self) -> Uint8Array {
+        unsafe { Uint8Array::view(&self.msg_data[..self.data_size]) }
     }
 }

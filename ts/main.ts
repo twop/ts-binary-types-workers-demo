@@ -1,15 +1,10 @@
 import {
   genPacket,
-  Packet,
-  writePacket,
-  readPacket,
   WorkerMsg,
-  printExecTime,
   GenPayloadOptions,
   genPayload,
   WorkerStructuralMsg,
-  WorkerJsonMsg,
-  Payload
+  WorkerJsonMsg
 } from "./messages";
 import dequal from "dequal";
 dequal;
@@ -21,21 +16,29 @@ import { Union, of } from "ts-union";
 
 import { html, render } from "lit-html";
 import { guard } from "lit-html/directives/guard";
-import { bindesc } from "ts-binary-types";
+import { Packet, Payload } from "./generated/messages.gen";
+import { readPacket } from "./generated/messages.gen.deser";
+import { writePacket, writePayload } from "./generated/messages.gen.ser";
 
 const worker = new Worker("./worker.ts", { type: "module" });
+
+const stopGC: any[] = [];
 
 const measureWith = <T>(
   read: (d: T) => Packet,
   send: (packet: Packet, receivedData?: T) => void
-) => (packets: Packet[]): Promise<number> => {
-  return new Promise<number>(resolve => {
+) => (packets: Packet[]): Promise<number[]> => {
+  return new Promise<number[]>(resolve => {
     let i = 0;
-    const received = new Array<Packet>(packets.length);
-    const start = performance.now();
+    const received = new Array(packets.length);
+    stopGC.push(received);
+    let start = 0;
+
+    const roundTrips: number[] = [];
 
     worker.onmessage = function msgListener({ data }) {
       const packet = read(data);
+      roundTrips.push(performance.now() - start);
       received[i] = packet;
       // if (!dequal(packet, packets[i])) {
       //   console.log("not equal", packet, packets[i]);
@@ -43,12 +46,14 @@ const measureWith = <T>(
 
       i++;
       if (i < packets.length) {
+        start = performance.now();
         send(packets[i], data);
       } else {
         worker.removeEventListener("message", msgListener);
-        resolve(performance.now() - start);
+        resolve(roundTrips);
       }
     };
+    start = performance.now();
     send(packets[0]);
   });
 };
@@ -57,9 +62,12 @@ const PACKET_LENGTH = 1000;
 
 const measureBinary = (tag: "binary" | "binary_for_wasm") =>
   measureWith<ArrayBuffer>(
-    buffer => readPacket(new Uint8Array(buffer)),
+    buffer => readPacket({ arr: new Uint8Array(buffer), pos: 0 }),
     (msg, receivedData = new ArrayBuffer(PACKET_LENGTH * 200)) => {
-      const toSend = writePacket(msg, new Uint8Array(receivedData)).buffer;
+      const toSend = writePacket(
+        { arr: new Uint8Array(receivedData), pos: 0 },
+        msg
+      ).arr.buffer;
       const workerMsg: WorkerMsg = { tag, val: toSend };
       worker.postMessage(workerMsg, [toSend]);
     }
@@ -84,7 +92,7 @@ const measureJson = measureWith<WorkerJsonMsg>(
 const BenchmarkResult = Union({
   NotStarted: of(null),
   InProgress: of(null),
-  Finished: of<BenchType, number>()
+  Finished: of<[BenchType, Duration][]>()
 });
 
 const { InProgress, NotStarted, Finished } = BenchmarkResult;
@@ -105,18 +113,25 @@ const enum BenchType {
 }
 
 const Effect = Union({
-  RunBenchmark: of<Packet[], BenchType>(),
-  GenerateMessages: of<BenchType, GenPayloadOptions, number>()
+  RunBenchmarks: of<Packet[]>(),
+  GenerateMessages: of<GenPayloadOptions, number>()
 });
 
 type Effect = typeof Effect.T;
 
+type Duration = {
+  total: number;
+  fastest: number;
+};
+
+const TAKE_PERCENT_FASTEST = 0.2;
+
 const Action = Union({
   ChangeOptions: of<GenPayloadOptions>(),
   ChangeMsgCount: of<number>(),
-  Start: of<BenchType>(),
-  SetPackets: of<BenchType, Packet[]>(),
-  Finish: of<BenchType, number>()
+  Start: of(null),
+  SetPackets: of<Packet[]>(),
+  Finish: of<BenchType, Duration>()
 });
 
 const { ChangeOptions, ChangeMsgCount, Start, SetPackets, Finish } = Action;
@@ -129,20 +144,28 @@ const update = (state: State, action: Action) =>
     ChangeMsgCount: packetCount => [
       { ...state, packetCount, packets: undefined }
     ],
-    Start: type => {
+    Start: () => {
       const { packets: messages, options, packetCount } = state;
       return [
         { ...state, result: InProgress },
         messages
-          ? Effect.RunBenchmark(messages, type)
-          : Effect.GenerateMessages(type, options, packetCount)
+          ? Effect.RunBenchmarks(messages)
+          : Effect.GenerateMessages(options, packetCount)
       ];
     },
-    SetPackets: (typeToRun, messages) => [
+    SetPackets: messages => [
       { ...state, packets: messages },
-      Effect.RunBenchmark(messages, typeToRun)
+      Effect.RunBenchmarks(messages)
     ],
-    Finish: (type, duration) => [{ ...state, result: Finished(type, duration) }]
+    Finish: (type, duration) => [
+      {
+        ...state,
+        result: BenchmarkResult.match(state.result, {
+          Finished: results => Finished([...results, [type, duration]]),
+          default: () => Finished([[type, duration]])
+        })
+      }
+    ]
   });
 
 const allOptionsKeys: (keyof GenPayloadOptions)[] = [
@@ -172,33 +195,13 @@ const app = (
     </p>
     <p>
       <button
-        @click=${() => dispatch(Start(BenchType.StructuralCloning))}
+        @click=${() => dispatch(Start)}
       >
-        structural
+        Start benchmark
       </button>
     </p>
-    <p>
-      <button
-        @click=${() => dispatch(Start(BenchType.Binary))}
-      >
-        binary
-      </button>
-    </p>
-    <p>
-      <button
-        @click=${() => dispatch(Start(BenchType.WASM))}
-      >
-        WASM
-      </button>
-    </p>
-    <p>
-      <button
-        @click=${() => dispatch(Start(BenchType.JSON))}
-      >
-        json
-      </button>
-    </p>
-    <p>
+   
+  
     <p style="margin-left: 10px">
       Result:
       <p>
@@ -212,10 +215,19 @@ const app = (
               html`
                 <div>Press a button to start</div>
               `,
-            Finished: (type, duration) =>
-              html`
-                <div>${type} took: ${duration}ms</div>
-              `
+            Finished: results => html`
+              <div>
+                Note: "fastest" is a sum of ${TAKE_PERCENT_FASTEST * 100}%
+                fastest round trips
+                ${results.map(
+                  ([type, { total, fastest }]) => html`
+                    <p>
+                      ${type} total: ${total}ms, fastest: ${fastest}
+                    </p>
+                  `
+                )}
+              </div>
+            `
           })
         )}
       </p>
@@ -238,7 +250,7 @@ const app = (
 };
 
 const estimateBinarySize = (testPayload: Payload): number =>
-  Payload[bindesc].write({ arr: new Uint8Array(1), pos: 0 }, testPayload).pos;
+  writePayload({ arr: new Uint8Array(1), pos: 0 }, testPayload).pos;
 
 function generationOption<K extends keyof GenPayloadOptions>(
   options: GenPayloadOptions,
@@ -255,36 +267,40 @@ function generationOption<K extends keyof GenPayloadOptions>(
   </p>`;
 }
 
+const benchmarks: [BenchType, (packets: Packet[]) => Promise<number[]>][] = [
+  [BenchType.Binary, measureBinary("binary")],
+  [BenchType.WASM, measureBinary("binary_for_wasm")],
+  [BenchType.StructuralCloning, measureStructuralCloning],
+  [BenchType.JSON, measureJson]
+];
+
 const runEffect = (effect: Effect, dispatch: (action: Action) => void) => {
   Effect.match(effect, {
-    RunBenchmark: (messages, type) => {
-      const benchmarkPromise = (() => {
-        switch (type) {
-          case BenchType.Binary:
-            return measureBinary("binary")(messages);
-          case BenchType.WASM:
-            return measureBinary("binary_for_wasm")(messages);
-          case BenchType.JSON:
-            return measureJson(messages);
-          case BenchType.StructuralCloning:
-            return measureStructuralCloning(messages);
-        }
-      })();
+    RunBenchmarks: packets => {
+      benchmarks.reduce(async (prevBench, [type, runBench]) => {
+        await prevBench;
+        performance.mark(type);
+        const roundTrips = await runBench(packets);
+        const sum = (s: number, trip: number) => s + trip;
+        const total = roundTrips.reduce(sum);
+        const fastest = roundTrips
+          .sort((a, b) => a - b)
+          .slice(0, roundTrips.length / 3)
+          .reduce(sum);
 
-      benchmarkPromise.then(duration => {
-        printExecTime(type, duration);
-        return dispatch(Finish(type, duration));
-      });
+        // console.log("~~round trips fastest", type, fastestTripsTime);
+
+        console.info(`${type} full=${total}ms", fastest=${fastest}`);
+        dispatch(Finish(type, { fastest, total }));
+      }, Promise.resolve());
     },
-    GenerateMessages: (typeToRunNext, options, msgCount) =>
-      dispatch(
-        SetPackets(
-          typeToRunNext,
-          Array.from({ length: msgCount }, () =>
-            genPacket(PACKET_LENGTH, options)
-          )
-        )
-      )
+    GenerateMessages: (options, msgCount) => {
+      const packets = Array.from({ length: msgCount }, () =>
+        genPacket(PACKET_LENGTH, options)
+      );
+      stopGC.push(packets);
+      return dispatch(SetPackets(packets));
+    }
   });
 };
 
@@ -313,7 +329,7 @@ worker.onmessage = function onWorkerReady({ data }) {
 
   startApp({
     packetCount: 100,
-    options: { f64: true },
+    options: { f64: true, struct: true },
     result: NotStarted
   });
 };

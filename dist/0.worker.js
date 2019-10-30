@@ -1,428 +1,432 @@
-!(function(e) {
-  self.webpackChunk = function(t, r) {
-    for (var o in r) e[o] = r[o];
-    for (; t.length; ) n[t.pop()] = 1;
-  };
-  var t = {},
-    n = { 0: 1 },
-    r = {};
-  var o = {
-    2: function() {
-      return {
-        "./index.js": {
-          __wbindgen_string_new: function(e, n) {
-            return t[1].exports.__wbindgen_string_new(e, n);
-          },
-          __widl_f_log_1_: function(e) {
-            return t[1].exports.__widl_f_log_1_(e);
-          },
-          __wbindgen_object_drop_ref: function(e) {
-            return t[1].exports.__wbindgen_object_drop_ref(e);
-          },
-          __wbindgen_memory: function() {
-            return t[1].exports.__wbindgen_memory();
-          },
-          __wbg_buffer_cdcb54e9871fd20a: function(e) {
-            return t[1].exports.__wbg_buffer_cdcb54e9871fd20a(e);
-          },
-          __wbg_newwithbyteoffsetandlength_eaca81bb9f532a5a: function(e, n, r) {
-            return t[1].exports.__wbg_newwithbyteoffsetandlength_eaca81bb9f532a5a(
-              e,
-              n,
-              r
-            );
-          },
-          __wbindgen_throw: function(e, n) {
-            return t[1].exports.__wbindgen_throw(e, n);
-          }
-        }
-      };
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	self["webpackChunk"] = function webpackChunkCallback(chunkIds, moreModules) {
+/******/ 		for(var moduleId in moreModules) {
+/******/ 			modules[moduleId] = moreModules[moduleId];
+/******/ 		}
+/******/ 		while(chunkIds.length)
+/******/ 			installedChunks[chunkIds.pop()] = 1;
+/******/ 	};
+/******/
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// object to store loaded chunks
+/******/ 	// "1" means "already loaded"
+/******/ 	var installedChunks = {
+/******/ 		0: 1
+/******/ 	};
+/******/
+/******/ 	// object to store loaded and loading wasm modules
+/******/ 	var installedWasmModules = {};
+/******/
+/******/ 	function promiseResolve() { return Promise.resolve(); }
+/******/
+/******/ 	var wasmImportObjects = {
+/******/ 		2: function() {
+/******/ 			return {
+/******/ 				"./index.js": {
+/******/ 					"__wbindgen_string_new": function(p0i32,p1i32) {
+/******/ 						return installedModules[1].exports["__wbindgen_string_new"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__widl_f_log_1_": function(p0i32) {
+/******/ 						return installedModules[1].exports["__widl_f_log_1_"](p0i32);
+/******/ 					},
+/******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
+/******/ 						return installedModules[1].exports["__wbindgen_object_drop_ref"](p0i32);
+/******/ 					},
+/******/ 					"__wbindgen_memory": function() {
+/******/ 						return installedModules[1].exports["__wbindgen_memory"]();
+/******/ 					},
+/******/ 					"__wbg_buffer_cdcb54e9871fd20a": function(p0i32) {
+/******/ 						return installedModules[1].exports["__wbg_buffer_cdcb54e9871fd20a"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_newwithbyteoffsetandlength_eaca81bb9f532a5a": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules[1].exports["__wbg_newwithbyteoffsetandlength_eaca81bb9f532a5a"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbindgen_throw": function(p0i32,p1i32) {
+/******/ 						return installedModules[1].exports["__wbindgen_throw"](p0i32,p1i32);
+/******/ 					}
+/******/ 				}
+/******/ 			};
+/******/ 		},
+/******/ 	};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/ 	// This file contains only the entry chunk.
+/******/ 	// The chunk loading function for additional chunks
+/******/ 	__webpack_require__.e = function requireEnsure(chunkId) {
+/******/ 		var promises = [];
+/******/ 		promises.push(Promise.resolve().then(function() {
+/******/ 			// "1" is the signal for "already loaded"
+/******/ 			if(!installedChunks[chunkId]) {
+/******/ 				importScripts(__webpack_require__.p + "" + ({}[chunkId]||chunkId) + ".worker.js");
+/******/ 			}
+/******/ 		}));
+/******/
+/******/ 		// Fetch + compile chunk loading for webassembly
+/******/
+/******/ 		var wasmModules = {"1":[2]}[chunkId] || [];
+/******/
+/******/ 		wasmModules.forEach(function(wasmModuleId) {
+/******/ 			var installedWasmModuleData = installedWasmModules[wasmModuleId];
+/******/
+/******/ 			// a Promise means "currently loading" or "already loaded".
+/******/ 			if(installedWasmModuleData)
+/******/ 				promises.push(installedWasmModuleData);
+/******/ 			else {
+/******/ 				var importObject = wasmImportObjects[wasmModuleId]();
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"2":"de97848928eaaa0c01ab"}[wasmModuleId] + ".module.wasm");
+/******/ 				var promise;
+/******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
+/******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
+/******/ 						return WebAssembly.instantiate(items[0], items[1]);
+/******/ 					});
+/******/ 				} else if(typeof WebAssembly.instantiateStreaming === 'function') {
+/******/ 					promise = WebAssembly.instantiateStreaming(req, importObject);
+/******/ 				} else {
+/******/ 					var bytesPromise = req.then(function(x) { return x.arrayBuffer(); });
+/******/ 					promise = bytesPromise.then(function(bytes) {
+/******/ 						return WebAssembly.instantiate(bytes, importObject);
+/******/ 					});
+/******/ 				}
+/******/ 				promises.push(installedWasmModules[wasmModuleId] = promise.then(function(res) {
+/******/ 					return __webpack_require__.w[wasmModuleId] = (res.instance || res).exports;
+/******/ 				}));
+/******/ 			}
+/******/ 		});
+/******/ 		return Promise.all(promises);
+/******/ 	};
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// object with all WebAssembly.instance exports
+/******/ 	__webpack_require__.w = {};
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./node_modules/ts-binary/dist-web/index.js
+// note that all of them look at the same memory (same 4 bytes)
+const au32 = new Uint32Array(2);
+const au16 = new Uint16Array(au32.buffer);
+const au8 = new Uint8Array(au32.buffer);
+const af32 = new Float32Array(au32.buffer);
+const af64 = new Float64Array(au32.buffer);
+const ai32 = new Int32Array(au32.buffer);
+const reserve = (sink, numberOfBytes) => {
+    const { arr, pos } = sink;
+    if (arr.length - pos > numberOfBytes)
+        return sink;
+    const newLen = Math.max(arr.length * 2, arr.length + numberOfBytes);
+    const newArr = new Uint8Array(newLen);
+    newArr.set(arr, 0);
+    return { arr: newArr, pos };
+};
+// write a byte without any checks
+const wb = (sink, byte) => {
+    const { arr, pos } = sink;
+    arr[pos] = byte;
+    sink.pos += 1;
+    return sink;
+};
+const write_u8 = (sink, val) => wb(reserve(sink, 1), val);
+const write_u32 = (sink, val) => wb(wb(wb(wb(reserve(sink, 4), val), val >> 8), val >> 16), val >> 24);
+const write_u16 = (sink, val) => wb(wb(reserve(sink, 2), val), val >> 8);
+const write_u64 = (sink, val) => write_u32(write_u32(reserve(sink, 8), val), 0);
+const write_f32 = (sink, val) => {
+    af32[0] = val; // just translate the bytes from float to u32
+    return write_u32(reserve(sink, 4), au32[0]);
+};
+const write_f64 = (sink, val) => {
+    af64[0] = val; // just translate the bytes from float64 to u32
+    return write_u32(write_u32(reserve(sink, 8), au32[0]), au32[1]);
+};
+const write_i32 = (sink, val) => {
+    ai32[0] = val; // just translate the bytes from i32 to u32
+    return write_u32(reserve(sink, 4), au32[0]);
+};
+const encoder = new TextEncoder();
+const encodeStrInto = 'encodeInto' in encoder
+    ? (str, arr, pos) => encoder.encodeInto(str, new Uint8Array(arr.buffer, pos)).written
+    : (str, arr, pos) => {
+        const bytes = encoder.encode(str);
+        arr.set(bytes, pos);
+        return bytes.length;
+    };
+const write_str = (sink, val) => {
+    // reserve 8 bytes for the u64 len
+    sink = reserve(sink, val.length * 3 + 8);
+    const bytesWritten = encodeStrInto(val, sink.arr, sink.pos + 8);
+    sink = write_u64(sink, bytesWritten);
+    sink.pos += bytesWritten;
+    return sink;
+};
+const write_bool = (sink, val) => write_u8(sink, val ? 1 : 0);
+const seq_writer = (serEl) => (sink, seq) => seq.reduce(serEl, write_u64(sink, seq.length));
+const opt_writer = (serEl) => (sink, val) => val === undefined ? write_u8(sink, 0) : serEl(write_u8(sink, 1), val);
+// -------- Deserialization ----------
+const read_u8 = sink => sink.arr[sink.pos++];
+// read 1 byte into a number + move pos in sink by 1
+const rb = read_u8;
+const read_u32 = sink => {
+    au8[0] = rb(sink);
+    au8[1] = rb(sink);
+    au8[2] = rb(sink);
+    au8[3] = rb(sink);
+    return au32[0];
+};
+const read_u16 = sink => {
+    au8[0] = rb(sink);
+    au8[1] = rb(sink);
+    return au16[0];
+};
+const read_u64 = sink => {
+    // we don't support numbers more than u32 (yet)
+    const val = read_u32(sink);
+    sink.pos += 4;
+    return val;
+};
+const read_f32 = sink => {
+    au8[0] = rb(sink);
+    au8[1] = rb(sink);
+    au8[2] = rb(sink);
+    au8[3] = rb(sink);
+    return af32[0];
+};
+const read_f64 = sink => {
+    for (let i = 0; i < 8; i++)
+        au8[i] = rb(sink);
+    return af64[0];
+};
+const read_i32 = sink => {
+    au8[0] = rb(sink);
+    au8[1] = rb(sink);
+    au8[2] = rb(sink);
+    au8[3] = rb(sink);
+    return ai32[0];
+};
+const read_bool = sink => rb(sink) === 1;
+const opt_reader = (readEl) => sink => rb(sink) === 1 ? readEl(sink) : undefined;
+const seq_reader = (readEl) => sink => {
+    const count = read_u64(sink);
+    // Note it doesn't make sense to set capacity here
+    // because it will mess up shapes
+    const res = new Array();
+    for (let i = 0; i < count; i++) {
+        res.push(readEl(sink));
     }
-  };
-  function s(n) {
-    if (t[n]) return t[n].exports;
-    var r = (t[n] = { i: n, l: !1, exports: {} });
-    return e[n].call(r.exports, r, r.exports, s), (r.l = !0), r.exports;
-  }
-  (s.e = function(e) {
-    var t = [];
-    return (
-      t.push(
-        Promise.resolve().then(function() {
-          n[e] || importScripts(s.p + "" + ({}[e] || e) + ".worker.js");
-        })
-      ),
-      ({ 1: [2] }[e] || []).forEach(function(e) {
-        var n = r[e];
-        if (n) t.push(n);
-        else {
-          var a,
-            c = o[e](),
-            u = fetch(
-              s.p + "" + { 2: "5e35e5f14292879fc89f" }[e] + ".module.wasm"
-            );
-          if (
-            c instanceof Promise &&
-            "function" == typeof WebAssembly.compileStreaming
-          )
-            a = Promise.all([WebAssembly.compileStreaming(u), c]).then(function(
-              e
-            ) {
-              return WebAssembly.instantiate(e[0], e[1]);
-            });
-          else if ("function" == typeof WebAssembly.instantiateStreaming)
-            a = WebAssembly.instantiateStreaming(u, c);
-          else {
-            a = u
-              .then(function(e) {
-                return e.arrayBuffer();
-              })
-              .then(function(e) {
-                return WebAssembly.instantiate(e, c);
-              });
-          }
-          t.push(
-            (r[e] = a.then(function(t) {
-              return (s.w[e] = (t.instance || t).exports);
-            }))
-          );
-        }
-      }),
-      Promise.all(t)
-    );
-  }),
-    (s.m = e),
-    (s.c = t),
-    (s.d = function(e, t, n) {
-      s.o(e, t) || Object.defineProperty(e, t, { enumerable: !0, get: n });
-    }),
-    (s.r = function(e) {
-      "undefined" != typeof Symbol &&
-        Symbol.toStringTag &&
-        Object.defineProperty(e, Symbol.toStringTag, { value: "Module" }),
-        Object.defineProperty(e, "__esModule", { value: !0 });
-    }),
-    (s.t = function(e, t) {
-      if ((1 & t && (e = s(e)), 8 & t)) return e;
-      if (4 & t && "object" == typeof e && e && e.__esModule) return e;
-      var n = Object.create(null);
-      if (
-        (s.r(n),
-        Object.defineProperty(n, "default", { enumerable: !0, value: e }),
-        2 & t && "string" != typeof e)
-      )
-        for (var r in e)
-          s.d(
-            n,
-            r,
-            function(t) {
-              return e[t];
-            }.bind(null, r)
-          );
-      return n;
-    }),
-    (s.n = function(e) {
-      var t =
-        e && e.__esModule
-          ? function() {
-              return e.default;
-            }
-          : function() {
-              return e;
-            };
-      return s.d(t, "a", t), t;
-    }),
-    (s.o = function(e, t) {
-      return Object.prototype.hasOwnProperty.call(e, t);
-    }),
-    (s.p = ""),
-    (s.w = {}),
-    s((s.s = 0));
-})([
-  function(e, t, n) {
-    "use strict";
-    n.r(t);
-    const r = new Uint32Array(2),
-      o = new Uint16Array(r.buffer),
-      s = new Uint8Array(r.buffer),
-      a = new Float32Array(r.buffer),
-      c = new Float64Array(r.buffer),
-      u = new Int32Array(r.buffer),
-      i = (e, t) => {
-        const { arr: n, pos: r } = e;
-        if (n.length - r > t) return e;
-        const o = Math.max(2 * n.length, n.length + t),
-          s = new Uint8Array(o);
-        return s.set(n, 0), { arr: s, pos: r };
-      },
-      l = (e, t) => {
-        const { arr: n, pos: r } = e;
-        return (n[r] = t), (e.pos += 1), e;
-      },
-      f = (e, t) => l(i(e, 1), t),
-      b = (e, t) => l(l(l(l(i(e, 4), t), t >> 8), t >> 16), t >> 24),
-      p = (e, t) => b(b(i(e, 8), t), 0),
-      _ = new TextEncoder(),
-      d =
-        "encodeInto" in _
-          ? (e, t, n) => _.encodeInto(e, new Uint8Array(t.buffer, n)).written
-          : (e, t, n) => {
-              const r = _.encode(e);
-              return t.set(r, n), r.length;
-            },
-      g = e => e.arr[e.pos++],
-      w = g,
-      y = e => (
-        (s[0] = w(e)), (s[1] = w(e)), (s[2] = w(e)), (s[3] = w(e)), r[0]
-      ),
-      m = e => {
-        const t = y(e);
-        return (e.pos += 4), t;
-      },
-      h = new TextDecoder(),
-      v = Symbol("bindesc"),
-      U = (e, t, n, r, o) => (
-        (o[v] = Object.assign(r, { read: e, write: t, tag: n })), o
-      );
-    var j;
-    !(function(e) {
-      (e.Bool = "Bool"),
-        (e.Str = "Str"),
-        (e.U32 = "U32"),
-        (e.F32 = "F32"),
-        (e.F64 = "F64"),
-        (e.U16 = "U16"),
-        (e.I32 = "I32"),
-        (e.U8 = "U8"),
-        (e.Enum = "Enum"),
-        (e.Struct = "Struct"),
-        (e.Tuple = "Tuple"),
-        (e.Union = "Union"),
-        (e.Optional = "Optional"),
-        (e.Nullable = "Nullable"),
-        (e.Vec = "Vec");
-    })(j || (j = {}));
-    const A = U(e => 1 === w(e), (e, t) => f(e, t ? 1 : 0), j.Bool, {}, {}),
-      S =
-        (U(y, b, j.U32, {}, {}),
-        U(g, f, j.U8, {}, {}),
-        U(
-          e => ((s[0] = w(e)), (s[1] = w(e)), o[0]),
-          (e, t) => l(l(i(e, 2), t), t >> 8),
-          j.U16,
-          {},
-          {}
-        ),
-        U(
-          e => (
-            (s[0] = w(e)), (s[1] = w(e)), (s[2] = w(e)), (s[3] = w(e)), a[0]
-          ),
-          (e, t) => ((a[0] = t), b(i(e, 4), r[0])),
-          j.F32,
-          {},
-          {}
-        ),
-        U(
-          e => {
-            for (let t = 0; t < 8; t++) s[t] = w(e);
-            return c[0];
-          },
-          (e, t) => ((c[0] = t), b(b(i(e, 8), r[0]), r[1])),
-          j.F64,
-          {},
-          {}
-        )),
-      O = U(
-        e => ((s[0] = w(e)), (s[1] = w(e)), (s[2] = w(e)), (s[3] = w(e)), u[0]),
-        (e, t) => ((u[0] = t), b(i(e, 4), r[0])),
-        j.I32,
-        {},
-        {}
-      ),
-      x = e => {
-        const { read: t, write: n } = e[v];
-        return U(
-          (e => t => (1 === w(t) ? e(t) : void 0))(t),
-          (e => (t, n) => (void 0 === n ? f(t, 0) : e(f(t, 1), n)))(n),
-          j.Optional,
-          { type: e },
-          {}
-        );
-      },
-      k = U(
-        e => {
-          const t = m(e),
-            n = h.decode(new Uint8Array(e.arr.buffer, e.pos, t));
-          return (e.pos += t), n;
-        },
-        (e, t) => {
-          e = i(e, 3 * t.length + 8);
-          const n = d(t, e.arr, e.pos + 8);
-          return ((e = p(e, n)).pos += n), e;
-        },
-        j.Str,
-        {},
-        {}
-      ),
-      M = e => U(T(e), P(e), j.Struct, { fields: e }, {}),
-      P = e => F(void 0, 0, Object.keys(e), e),
-      F = (e, t, n, r) => {
-        if (t >= n.length) return e || ((e, t) => e);
-        const o = n[t],
-          s = r[o][v].write;
-        return F(
-          e ? (t, n) => s(e(t, n), n[o]) : (e, t) => s(e, t[o]),
-          t + 1,
-          n,
-          r
-        );
-      },
-      T = e => {
-        const t = Object.keys(e),
-          n = t.map(t => e[t][v].read);
-        return function(e) {
-          const r = {};
-          for (let o = 0; o < t.length; o++) r[t[o]] = n[o](e);
-          return r;
-        };
-      };
-    const E = e => {
-        const t = {};
-        return (
-          Object.keys(e).forEach((n, r) => {
-            const o = e[n];
-            if (null === o) t[n] = (e, t) => b(e, r);
-            else {
-              const e = o[v].write;
-              t[n] = (t, n) => e(b(t, r), n);
-            }
-          }),
-          (e, { tag: n, val: r }) => t[n](e, r)
-        );
-      },
-      I = e => {
-        const t = Object.keys(e),
-          n = t.map(t => {
-            const n = e[t];
-            return n && n[v].read;
-          }),
-          r = t.map(t => {
-            return e[t] ? null : { tag: t, val: void 0 };
-          });
-        return e => {
-          const o = y(e),
-            s = n[o],
-            a = t[o];
-          return s ? { tag: a, val: s(e) } : r[o];
-        };
-      },
-      W = e =>
-        Object.keys(e).reduce((t, n) => {
-          const r = e[n];
-          return (
-            (t[n] =
-              null === r ? { tag: n, val: void 0 } : e => ({ tag: n, val: e })),
-            t
-          );
-        }, {}),
-      B = e => {
-        const { read: t, write: n } = e[v];
-        return U(
-          (e => t => {
-            const n = m(t),
-              r = new Array();
-            for (let o = 0; o < n; o++) r.push(e(t));
-            return r;
-          })(t),
-          (e => (t, n) => n.reduce(e, p(t, n.length)))(n),
-          j.Vec,
-          { type: e },
-          {}
-        );
-      },
-      N = (function(...e) {
-        let t;
-        const n = e,
-          r = n.map(e => e[v].write),
-          o = n.map(e => e[v].read);
-        let s, a;
-        switch (n.length) {
-          case 2: {
-            t = (e, t) => [e, t];
-            const [e, n] = r;
-            s = (t, [r, o]) => n(e(t, r), o);
-            const [c, u] = o;
-            a = e => t(c(e), u(e));
-            break;
-          }
-          case 3: {
-            t = (e, t, n) => [e, t, n];
-            const [e, n, c] = r;
-            s = (t, [r, o, s]) => c(n(e(t, r), o), s);
-            const [u, i, l] = o;
-            a = e => t(u(e), i(e), l(e));
-            break;
-          }
-          default:
-            (t = (...e) => e),
-              (s = (e, t) => t.reduce((e, t, n) => r[n](e, t), e)),
-              (a = e => o.map(t => t(e)));
-        }
-        return U(a, s, j.Tuple, { components: n }, t);
-      })(A, O),
-      V = M({ bool: A, i32vec: B(O) }),
-      J = (e => U(I(e), E(e), j.Union, { variants: e }, W(e)))({
-        unit: null,
-        val: V
-      }),
-      C = B(
-        M({ str: x(k), f64: x(S), tuple: x(N), union: x(J), struct: x(V) })
-      );
-    const D = C[v].write,
-      q = C[v].read;
-    const z = globalThis;
-    n.e(1)
-      .then(n.bind(null, 1))
-      .then(({ Echo: e }) => {
-        const t = e.new();
-        (z.onmessage = ({ data: e }) => {
-          const n = e;
-          switch (n.tag) {
+    return res;
+};
+const decoder = new TextDecoder();
+const read_str = sink => {
+    const len = read_u64(sink);
+    const str = decoder.decode(new Uint8Array(sink.arr.buffer, sink.pos, len));
+    sink.pos += len;
+    return str;
+};
+
+
+//# sourceMappingURL=index.js.map
+
+// CONCATENATED MODULE: ./ts/generated/messages.gen.ser.ts
+
+const writeOptStr = opt_writer(write_str);
+const writeOptF64 = opt_writer(write_f64);
+const writeBoolI32 = (sink, val) => write_i32(write_bool(sink, val[0]), val[1]);
+const writeOptBoolI32 = opt_writer(writeBoolI32);
+const writeVecI32 = seq_writer(write_i32);
+const writeNestedPayload = (sink, { bool, i32vec }) => writeVecI32(write_bool(sink, bool), i32vec);
+const writeVariantPayload = (sink, val) => {
+    switch (val.tag) {
+        case "unit":
+            return write_u32(sink, 0);
+        case "val":
+            return writeNestedPayload(write_u32(sink, 1), val.value);
+    }
+};
+const writeOptVariantPayload = opt_writer(writeVariantPayload);
+const writeOptNestedPayload = opt_writer(writeNestedPayload);
+const writePayload = (sink, { str, f64, tuple, union, structField }) => writeOptNestedPayload(writeOptVariantPayload(writeOptBoolI32(writeOptF64(writeOptStr(sink, str), f64), tuple), union), structField);
+const writeVecPayload = seq_writer(writePayload);
+const writePacket = writeVecPayload;
+
+// CONCATENATED MODULE: ./ts/generated/messages.gen.ts
+const Packet = (val) => val;
+var VariantPayload;
+(function (VariantPayload) {
+    VariantPayload.unit = { tag: "unit" };
+    VariantPayload.val = (value) => ({
+        tag: "val",
+        value
+    });
+})(VariantPayload || (VariantPayload = {}));
+const BoolI32 = (p0, p1) => [p0, p1];
+
+// CONCATENATED MODULE: ./ts/generated/messages.gen.deser.ts
+
+
+const readOptStr = opt_reader(read_str);
+const readOptF64 = opt_reader(read_f64);
+const readBoolI32 = (sink) => BoolI32(read_bool(sink), read_i32(sink));
+const readOptBoolI32 = opt_reader(readBoolI32);
+const readVecI32 = seq_reader(read_i32);
+const readNestedPayload = (sink) => {
+    const bool = read_bool(sink);
+    const i32vec = readVecI32(sink);
+    return { bool, i32vec };
+};
+const readVariantPayload = (sink) => {
+    switch (read_u32(sink)) {
+        case 0:
+            return VariantPayload.unit;
+        case 1:
+            return VariantPayload.val(readNestedPayload(sink));
+    }
+    throw new Error("bad variant index for VariantPayload");
+};
+const readOptVariantPayload = opt_reader(readVariantPayload);
+const readOptNestedPayload = opt_reader(readNestedPayload);
+const readPayload = (sink) => {
+    const str = readOptStr(sink);
+    const f64 = readOptF64(sink);
+    const tuple = readOptBoolI32(sink);
+    const union = readOptVariantPayload(sink);
+    const structField = readOptNestedPayload(sink);
+    return { str, f64, tuple, union, structField };
+};
+const readVecPayload = seq_reader(readPayload);
+const readPacket = (sink) => Packet(readVecPayload(sink));
+
+// CONCATENATED MODULE: ./node_modules/ts-loader!./ts/worker.ts
+
+
+const worker_self = globalThis;
+__webpack_require__.e(/* import() */ 1).then(__webpack_require__.bind(null, 1))
+    .then(({ Echo }) => {
+    const wasmEcho = Echo.new();
+    worker_self.onmessage = ({ data }) => {
+        const msg = data;
+        switch (msg.tag) {
             case "structural":
-              postMessage(n);
-              break;
+                postMessage(msg);
+                break;
             case "json":
-              const e = JSON.parse(n.val),
-                r = { tag: "json", val: JSON.stringify(e) };
-              postMessage(r);
-              break;
+                const parsed = JSON.parse(msg.val);
+                const toSendBack = {
+                    tag: "json",
+                    val: JSON.stringify(parsed)
+                };
+                postMessage(toSendBack);
+                break;
             case "binary": {
-              const e = new Uint8Array(n.val),
-                t = ((e, t) => {
-                  const { arr: n } = D({ arr: t, pos: 0 }, e);
-                  return n;
-                })(
-                  (e => {
-                    return q({ arr: e, pos: 0 });
-                  })(e),
-                  e
-                ).buffer;
-              postMessage(t, [t]);
-              break;
+                const arr = new Uint8Array(msg.val);
+                // const start = performance.now();
+                const toSend = writePacket({ arr, pos: 0 }, readPacket({ arr, pos: 0 })).arr.buffer;
+                // const delta = performance.now() - start;
+                postMessage(toSend, [toSend]);
+                // printExecTime("worker", delta);
+                break;
             }
             case "binary_for_wasm": {
-              let e = new Uint8Array(n.val);
-              t.allocate_space(e.length).set(e);
-              const r = t.handle_message();
-              e.length < r && (e = new Uint8Array(r)),
-                e.set(t.view_memory()),
-                postMessage(e.buffer, [e.buffer]);
-              break;
+                let arr = new Uint8Array(msg.val);
+                const wasmMemView = wasmEcho.allocate_space(arr.length);
+                wasmMemView.set(arr);
+                const responseView = wasmEcho.handle_message();
+                if (arr.length < responseView.length) {
+                    arr = new Uint8Array(responseView.length);
+                }
+                arr.set(responseView);
+                postMessage(arr.buffer, [arr.buffer]);
+                break;
             }
-          }
-        }),
-          postMessage("ready");
-      })
-      .catch(console.error);
-  }
-]);
+        }
+    };
+    postMessage("ready");
+})
+    .catch(console.error);
+
+
+/***/ })
+/******/ ]);

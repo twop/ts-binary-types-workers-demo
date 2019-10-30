@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "build": "rimraf dist pkg && webpack",
+    "gen:contract": "ts-node -O \"{\\\"module\\\": \\\"CommonJS\\\"}\" contract.ts",
     "start": "rimraf dist pkg && webpack-dev-server --open -d",
     "test": "cargo test && wasm-pack test --headless",
     "serve-dist": "serve dist"
@@ -11,15 +12,19 @@
   "dependencies": {
     "dequal": "^1.0.0",
     "lit-html": "^1.1.2",
-    "ts-binary-types": "0.2.2",
+    "ts-binary": "^0.7.0",
     "ts-union": "^2.1.1"
   },
   "devDependencies": {
+    "@types/prettier": "^1.18.3",
     "@wasm-tool/wasm-pack-plugin": "^0.4.2",
     "copy-webpack-plugin": "^5.0.3",
+    "prettier": "^1.18.2",
     "rimraf": "^2.6.3",
     "serve": "^11.2.0",
     "ts-loader": "^6.2.0",
+    "ts-node": "^8.4.1",
+    "ts-rust-bridge-codegen": "^0.6.0",
     "typescript": "^3.6.4",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.3",
